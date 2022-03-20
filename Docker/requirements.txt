@@ -13,5 +13,4 @@ jiwer
 lang-trans
 librosa
 pyctcdecode
-#transformers
 unidecode
