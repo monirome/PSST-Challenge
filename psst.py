@@ -51,207 +51,7 @@ logger = logging.getLogger(__name__)
 
 def list_field(default=None, metadata=None):
     return field(default_factory=lambda: default, metadata=metadata)
-
-@dataclass
-class ModelArguments:
-    """
-    Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
-    """
-
-    model_name_or_path: str = field(metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"})
-    cache_dir: Optional[str] = field(
-        default=True,
-        metadata={"help": "Where do you want to store the pretrained models downloaded from huggingface.co"},
-    )
-    model_cache_dir: Optional[str] = field(
-        default=None,
-        metadata={"help": "Where do you want to store the pretrained models downloaded from huggingface.co"},
-    )
-    freeze_feature_extractor: Optional[bool] = field(
-        default=True, metadata={"help": "Whether to freeze the feature extractor layers of the model."}
-    )
-    attention_dropout: Optional[float] = field(
-        default=0.1, metadata={"help": "The dropout ratio for the attention probabilities."}
-    )
-    activation_dropout: Optional[float] = field(
-        default=0.1, metadata={"help": "The dropout ratio for activations inside the fully connected layer."}
-    )
-    hidden_dropout: Optional[float] = field(
-        default=0.1,
-        metadata={
-            "help": "The dropout probabilitiy for all fully connected layers in the embeddings, encoder, and pooler."
-        },
-    )
-    feat_proj_dropout: Optional[float] = field(
-        default=0.1,
-        metadata={"help": "The dropout probabilitiy for all 1D convolutional layers in feature extractor."},
-    )
-    mask_time_prob: Optional[float] = field(
-        default=0.05,
-        metadata={
-            "help": "Propability of each feature vector along the time axis to be chosen as the start of the vector"
-            "span to be masked. Approximately ``mask_time_prob * sequence_length // mask_time_length`` feature"
-            "vectors will be masked along the time axis. This is only relevant if ``apply_spec_augment is True``."
-        },
-    )
-    layerdrop: Optional[float] = field(default=0.0, metadata={"help": "The LayerDrop probability."})
-
-@dataclass
-class DataTrainingArguments:
-    """
-    Arguments pertaining to what data we are going to input our model for training and eval.
-    Using `HfArgumentParser` we can turn this class
-    into argparse arguments to be able to specify them on
-    the command line.
-    """
-
-    dataset_config_name: Optional[str] = field(
-        default=None, metadata={"help": "The configuration name of the dataset to use (via the datasets library)."})
-    train_split_name: Optional[str] = field(
-        default="train+validation",
-        metadata={
-            "help": "The name of the training data set split to use (via the datasets library). Defaults to 'train'"
-        },
-    )
-    overwrite_cache: bool = field(
-        default=True, metadata={"help": "Overwrite the cached preprocessed datasets or not."}
-    )
-    preprocessing_num_workers: Optional[int] = field(
-        default=None,
-        metadata={"help": "The number of processes to use for the preprocessing."},
-    )
-    max_train_samples: Optional[int] = field(
-        default=None,
-        metadata={
-            "help": "For debugging purposes or quicker training, truncate the number of training examples to this "
-            "value if set."
-        },
-    )
-    max_val_samples: Optional[int] = field(
-        default=None,
-        metadata={
-            "help": "For debugging purposes or quicker training, truncate the number of validation examples to this "
-            "value if set."
-        },
-    )
-    chars_to_ignore: List[str] = list_field(
-        default=[",", "?", ".", "!", "-", ";", ":", '""', "%", "'", '"', "�"],
-        metadata={"help": "A list of characters to remove from the transcripts."},
-    )
-
-@dataclass
-class DataCollatorCTCWithPadding:
-    """
-    Data collator that will dynamically pad the inputs received.
-    Args:
-        processor (:class:`~transformers.Wav2Vec2Processor`)
-            The processor used for proccessing the data.
-        padding (:obj:`bool`, :obj:`str` or :class:`~transformers.tokenization_utils_base.PaddingStrategy`, `optional`, defaults to :obj:`True`):
-            Select a strategy to pad the returned sequences (according to the model's padding side and padding index)
-            among:
-            * :obj:`True` or :obj:`'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
-              sequence if provided).
-            * :obj:`'max_length'`: Pad to a maximum length specified with the argument :obj:`max_length` or to the
-              maximum acceptable input length for the model if that argument is not provided.
-            * :obj:`False` or :obj:`'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
-              different lengths).
-        max_length (:obj:`int`, `optional`):
-            Maximum length of the ``input_values`` of the returned list and optionally padding length (see above).
-        max_length_labels (:obj:`int`, `optional`):
-            Maximum length of the ``labels`` returned list and optionally padding length (see above).
-        pad_to_multiple_of (:obj:`int`, `optional`):
-            If set will pad the sequence to a multiple of the provided value.
-            This is especially useful to enable the use of Tensor Cores on NVIDIA hardware with compute capability >=
-            7.5 (Volta).
-    """
-
-    processor: Wav2Vec2Processor
-    padding: Union[bool, str] = True
-    max_length: Optional[int] = None
-    max_length_labels: Optional[int] = None
-    pad_to_multiple_of: Optional[int] = None
-    pad_to_multiple_of_labels: Optional[int] = None
-
-    def __call__(self, features: List[Dict[str, Union[List[int], torch.Tensor]]]) -> Dict[str, torch.Tensor]:
-        # split inputs and labels since they have to be of different lenghts and need
-        # different padding methods
-        input_features = [{"input_values": feature["input_values"]} for feature in features]
-        label_features = [{"input_ids": feature["labels"]} for feature in features]
-
-        batch = self.processor.pad(
-            input_features,
-            padding=self.padding,
-            max_length=self.max_length,
-            pad_to_multiple_of=self.pad_to_multiple_of,
-            return_tensors="pt",
-        )
-        with self.processor.as_target_processor():
-            labels_batch = self.processor.pad(
-                label_features,
-                padding=self.padding,
-                max_length=self.max_length_labels,
-                pad_to_multiple_of=self.pad_to_multiple_of_labels,
-                return_tensors="pt",
-            )
-
-        # replace padding with -100 to ignore loss correctly
-        labels = labels_batch["input_ids"].masked_fill(labels_batch.attention_mask.ne(1), -100)
-
-        batch["labels"] = labels
-
-        return batch
-
-class CTCTrainer(Trainer):
-    def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
-        """
-        Perform a training step on a batch of inputs.
-        Subclass and override to inject custom behavior.
-        Args:
-            model (:obj:`nn.Module`):
-                The model to train.
-            inputs (:obj:`Dict[str, Union[torch.Tensor, Any]]`):
-                The inputs and targets of the model.
-                The dictionary will be unpacked before being fed to the model. Most models expect the targets under the
-                argument :obj:`labels`. Check your model's documentation for all accepted arguments.
-        Return:
-            :obj:`torch.Tensor`: The tensor with training loss on this batch.
-        """
-
-        model.train()
-        inputs = self._prepare_inputs(inputs)
-
-        if self.use_amp:
-            with autocast():
-                loss = self.compute_loss(model, inputs)
-        else:
-            loss = self.compute_loss(model, inputs)
-
-        if self.args.n_gpu > 1:
-            if model.module.config.ctc_loss_reduction == "mean":
-                loss = loss.mean()
-            elif model.module.config.ctc_loss_reduction == "sum":
-                loss = loss.sum() / (inputs["labels"] >= 0).sum()
-            else:
-                raise ValueError(f"{model.config.ctc_loss_reduction} is not valid. Choose one of ['mean', 'sum']")
-
-        if self.args.gradient_accumulation_steps > 1:
-            loss = loss / self.args.gradient_accumulation_steps
-
-        if self.use_amp:
-            self.scaler.scale(loss).backward()
-        elif self.use_apex:
-            with amp.scale_loss(loss, self.optimizer) as scaled_loss:
-                scaled_loss.backward()
-        elif self.deepspeed:
-            self.deepspeed.backward(loss)
-        else:
-            loss.backward()
-
-
-        return loss.detach()
-
-# !pip install psstdata
-
+############################################################################################################
 import pandas as pd
 df_train = pd.read_csv("df_train_psst.csv")
 df_test = pd.read_csv("df_test_psst.csv")
@@ -270,17 +70,14 @@ df_test_prueba = df_test_prueba[["transcription", "filename"]]
 df_test_prueba.columns = ["file", "audio"]
 df_test_prueba
 
+############################################################################################################
 import datasets
 from datasets import load_dataset, Dataset
 
 df_train_prueba = Dataset.from_pandas(df_train_prueba)
 df_test_prueba = Dataset.from_pandas(df_test_prueba)
 
-df_test_prueba
-
-from google.colab import drive
-drive.mount('/content/drive')
-
+############################################################################################################
 def extract_all_chars(batch):
   all_text = " ".join(batch["file"])
   vocab = list(set(all_text))
@@ -305,17 +102,12 @@ import json
 with open('vocab.json', 'w') as vocab_file:
     json.dump(vocab_dict, vocab_file)
 
-vocab_dict
-
 #################################################################
 # PREPARE FINETUNE ######################################################
 from transformers import Wav2Vec2CTCTokenizer, Wav2Vec2FeatureExtractor, Wav2Vec2Processor
 tokenizer = Wav2Vec2CTCTokenizer("./vocab.json", unk_token="[UNK]", pad_token="[PAD]", word_delimiter_token="|")
 feature_extractor = Wav2Vec2FeatureExtractor(feature_size=1, sampling_rate=16000, padding_value=0.0, do_normalize=True, return_attention_mask=True)
 processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tokenizer)
-
-print(df_train_prueba[0])
-
 
 #################################################################
 # PREPARE AUDIOS ######################################################
@@ -325,71 +117,10 @@ from datasets import Audio
 df_train_prueba = df_train_prueba.cast_column("audio", Audio(sampling_rate=16_000))
 df_test_prueba = df_test_prueba.cast_column("audio", Audio(sampling_rate=16_000))
 
-# resampler = torchaudio.transforms.Resample(48_000, 16_000)
-
-# def speech_file_to_array_fn(batch):
-#     speech_array, sampling_rate = torchaudio.load(batch["audio"])
-#     batch["speech"] = speech_array[0].numpy()
-#     batch["sampling_rate"] = sampling_rate
-#     batch["target_text"] = batch["file"]
-#     return batch
-
-# df_train_prueba = df_train_prueba.map(speech_file_to_array_fn, remove_columns=df_train_prueba.column_names)
-# df_test_prueba = df_test_prueba.map(speech_file_to_array_fn, remove_columns=df_test_prueba.column_names)
-
-print(df_train_prueba)
-
-df_test_prueba["file"][2]
-# asdf}asd
-
-df_train_prueba
-
-########################################
-# DOWNSAMPLE DATA #####################
-# import librosa
-# import numpy as np
-
-# resampler = torchaudio.transforms.Resample(48_000, 16_000)
-
-# def resample(batch):
-#     batch["speech"] = librosa.resample(np.asarray(batch["speech"]), 48_000, 16_000)
-#     batch["sampling_rate"] = 16_000
-#     return batch
-
-# df_train_prueba2 = df_train_prueba.map(resample, num_proc=1)
-# df_test_prueba2 = df_test_prueba.map(resample, num_proc=1)
-
 from datasets import load_metric
 
 ##############################################
 # Prepare data for training ##################
-
-# def prepare_dataset(batch):
-#     # check that all files have the correct sampling rate
-#     assert (
-#         len(set(batch["sampling_rate"])) == 1
-#     ), f"Make sure all inputs have the same sampling rate of {processor.feature_extractor.sampling_rate}."
-
-#     batch["input_values"] = processor(
-#         batch["speech"], sampling_rate=batch["sampling_rate"][0]
-#     ).input_values
-
-#     with processor.as_target_processor():
-#         batch["labels"] = processor(batch["target_text"]).input_ids
-#     return batch
-
-# df_train_prueba = df_train_prueba.map(
-#     prepare_dataset,
-#     remove_columns=df_train_prueba.column_names,
-#     batch_size=4,
-#     batched=True,
-# )
-# df_test_prueba = df_test_prueba.map(
-#     prepare_dataset,
-#     remove_columns=df_test_prueba.column_names,
-#     batch_size=4,
-#     batched=True,
-# )
 
 def prepare_dataset(batch):
         audio = batch["audio"]
