@@ -1,0 +1,17 @@
+ipdb
+librosa
+pandas
+#pycuda
+pyyaml
+soundfile
+sox
+tqdm
+wrapt
+datasets
+jiwer
+#kenlm
+lang-trans
+librosa
+pyctcdecode
+#transformers
+unidecode
