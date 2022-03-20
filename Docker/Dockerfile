@@ -25,12 +25,12 @@ WORKDIR /workspace
 
 RUN git clone -b v4.13.0 https://github.com/huggingface/transformers && cd transformers && pip install -e .
 
-RUN apt-get update && apt-get -y install python-dev \
-    datasets \
+RUN apt-get update && apt-get -y install python-dev 
+RUN pip installdatasets \
     jiwer \
     soundfile \
     torchaudio \
-    transformers==4.11.3 \
+    transformers \
     librosa==0.8.0
 
 RUN pip install ipdb pandas pyyaml soundfile sox tqdm wrapt jiwer lang-trans pyctcdecode unidecode
