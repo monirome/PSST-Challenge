@@ -15,6 +15,8 @@ Original file is located at
 # !pip install librosa
 # !pip install jiwer
 
+pip install psstdata
+
 import json
 import logging
 import os
