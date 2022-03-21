@@ -2,6 +2,8 @@ ARG FROM_IMAGE_NAME=nvcr.io/nvidia/pytorch:21.03-py3
 FROM ${FROM_IMAGE_NAME}
 ARG DEBIAN_FRONTEND=noninteractive
 
+RUN pip3 install torch==1.8.1+cu111 torchaudio==0.8.1 torchtext==0.9.1 torchvision==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html
+
 RUN apt-get update && apt-get -y install \
     build-essential \
     cmake \
