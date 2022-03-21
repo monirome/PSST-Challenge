@@ -53,7 +53,8 @@ def list_field(default=None, metadata=None):
     return field(default_factory=lambda: default, metadata=metadata)
 ############################################################################################################
 import pandas as pd
-# import psstdata
+import psstdata
+
 data = psstdata.load()
 
 df_train = pd.read_csv("df_train_psst.csv")
