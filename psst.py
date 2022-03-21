@@ -53,17 +53,20 @@ def list_field(default=None, metadata=None):
     return field(default_factory=lambda: default, metadata=metadata)
 ############################################################################################################
 import pandas as pd
+import psstdata
+data = psstdata.load()
+
 df_train = pd.read_csv("df_train_psst.csv")
 df_test = pd.read_csv("df_test_psst.csv")
 
-df_train["filename"]="/content/drive/MyDrive/psst-data/psst-data-2022-03-02/train/"+df_train["filename"]
+df_train["filename"]=df_train["filename"]
 df_train_prueba = df_train[:10]
 df_train_prueba
 df_train_prueba = df_train_prueba[["transcription", "filename"]]
 df_train_prueba.columns = ["file", "audio"]
 df_train_prueba
 
-df_test["filename"]="/content/drive/MyDrive/psst-data/psst-data-2022-03-02/train/"+df_test["filename"]
+df_test["filename"]=df_test["filename"]
 df_test_prueba = df_train[:10]
 df_test_prueba
 df_test_prueba = df_test_prueba[["transcription", "filename"]]
@@ -235,7 +238,7 @@ model = Wav2Vec2ForCTC.from_pretrained(
 model.freeze_feature_extractor()
 
 training_args = TrainingArguments(
-  output_dir="/content/gdrive/MyDrive/wav2vec2-large-xlsr-demo",
+  output_dir="/model/wav2vec2-large-xlsr-demo",
   group_by_length=True,
   per_device_train_batch_size=16,
   gradient_accumulation_steps=2,
