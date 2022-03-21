@@ -33,7 +33,8 @@ RUN pip install datasets \
     soundfile \
     torchaudio \
     transformers \
-    librosa==0.8.0
+    librosa==0.8.0 \
+    psstdata
 
 RUN pip install ipdb pandas pyyaml soundfile sox tqdm wrapt jiwer lang-trans pyctcdecode unidecode
 RUN pip install https://github.com/kpu/kenlm/archive/master.zip
