@@ -2,7 +2,7 @@
 
 
 ##################
-DATA_DIR=${1:-${DATA_DIR:-"/datasets/BASQUE"}}
+DATA_DIR=${1:-${DATA_DIR:-"/datasets"}}
 DATASET=${2:-${DATASET:-"eu"}}
 RESULT_DIR=${3:-${RESULT_DIR:-"/results"}}
 MODELXLSR=${4:-${MODELXLSR:-"facebook/wav2vec2-xls-r-300m"}}
