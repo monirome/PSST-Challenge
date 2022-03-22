@@ -267,5 +267,6 @@ trainer = Trainer(
 #
 print("# START TRAINING")
 trainer.train()
+print(wer)
 
 
