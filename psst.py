@@ -28,6 +28,11 @@ import numpy as np
 import torch
 from packaging import version
 from torch import nn
+torch.cuda.empty_cache() 
+
+import gc
+del variables
+gc.collect() 
 
 import transformers
 from transformers import (
