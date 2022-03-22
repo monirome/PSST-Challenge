@@ -240,7 +240,7 @@ model.freeze_feature_extractor()
 
 training_args = TrainingArguments(
   output_dir="wav2vec2-large-xlsr-demo",
-  result_dir = "/results",
+#   result_dir = "/results",
   group_by_length=True,
   per_device_train_batch_size=16,
   gradient_accumulation_steps=2,
@@ -270,6 +270,5 @@ trainer = Trainer(
 #
 print("# START TRAINING")
 trainer.train()
-print(wer)
 
 
