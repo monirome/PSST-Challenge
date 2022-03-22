@@ -67,7 +67,7 @@ df_train_prueba = df_train_prueba[["transcription", "filename"]]
 df_train_prueba.columns = ["file", "audio"]
 df_train_prueba
 
-df_test["filename"]=psst-data/psst-data-2022-03-02/train/"+df_test["filename"]
+df_test["filename"]="psst-data/psst-data-2022-03-02/train/"+df_test["filename"]
 df_test_prueba = df_train[:10]
 df_test_prueba
 df_test_prueba = df_test_prueba[["transcription", "filename"]]
