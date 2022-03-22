@@ -239,7 +239,7 @@ model = Wav2Vec2ForCTC.from_pretrained(
 model.freeze_feature_extractor()
 
 training_args = TrainingArguments(
-  output_dir="/model/wav2vec2-large-xlsr-demo",
+  output_dir="wav2vec2-large-xlsr-demo",
   group_by_length=True,
   per_device_train_batch_size=16,
   gradient_accumulation_steps=2,
