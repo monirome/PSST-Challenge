@@ -60,14 +60,14 @@ data = psstdata.load()
 df_train = pd.read_csv("df_train_psst.csv")
 df_test = pd.read_csv("df_test_psst.csv")
 
-df_train["filename"]="psst-data/psst-data-2022-03-02/train/"+df_train["filename"]
+df_train["filename"]="root/psst-data/psst-data-2022-03-02/train/"+df_train["filename"]
 df_train_prueba = df_train[:10]
 df_train_prueba
 df_train_prueba = df_train_prueba[["transcription", "filename"]]
 df_train_prueba.columns = ["file", "audio"]
 df_train_prueba
 
-df_test["filename"]="psst-data/psst-data-2022-03-02/train/"+df_test["filename"]
+df_test["filename"]="root/psst-data/psst-data-2022-03-02/train/"+df_test["filename"]
 df_test_prueba = df_train[:10]
 df_test_prueba
 df_test_prueba = df_test_prueba[["transcription", "filename"]]
