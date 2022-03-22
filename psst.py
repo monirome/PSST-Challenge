@@ -272,8 +272,8 @@ trainer.train()
 
 from transformers import AutoModelForCTC, Wav2Vec2Processor
 
-model = AutoModelForCTC.from_pretrained("/modelos/wav2vec2-large-xlsr-demo")
-processor = Wav2Vec2Processor.from_pretrained("/modelos/wav2vec2-large-xlsr-demo")
+model = AutoModelForCTC.from_pretrained("/wav2vec2-large-xlsr-demo")
+processor = Wav2Vec2Processor.from_pretrained("/wav2vec2-large-xlsr-demo")
 
 processor = Wav2Vec2Processor.from_pretrained(repo_name)
 model = Wav2Vec2ForCTC.from_pretrained(repo_name)
