@@ -55,7 +55,7 @@ def list_field(default=None, metadata=None):
 import pandas as pd
 import psstdata
 
-data = psstdata.load()
+# data = psstdata.load()
 
 df_train = pd.read_csv("df_train_psst.csv")
 df_test = pd.read_csv("df_test_psst.csv")
