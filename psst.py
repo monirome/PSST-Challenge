@@ -61,25 +61,25 @@ df_train = pd.read_csv("df_train_psst.csv")
 df_test = pd.read_csv("df_test_psst.csv")
 
 df_train["filename"]="psst-data/psst-data-2022-03-02/train/"+df_train["filename"]
-# df_train_prueba = df_train[:10]
-df_train_prueba
-df_train_prueba = df_train_prueba[["transcription", "filename"]]
-df_train_prueba.columns = ["file", "audio"]
-df_train_prueba
+# df_train = df_train[:10]
+df_train
+df_train = df_train[["transcription", "filename"]]
+df_train.columns = ["file", "audio"]
+df_train
 
 df_test["filename"]="psst-data/psst-data-2022-03-02/train/"+df_test["filename"]
-# df_test_prueba = df_train[:10]
-df_test_prueba
-df_test_prueba = df_test_prueba[["transcription", "filename"]]
-df_test_prueba.columns = ["file", "audio"]
-df_test_prueba
+# df_test = df_train[:10]
+df_test
+df_test = df_test[["transcription", "filename"]]
+df_test.columns = ["file", "audio"]
+df_test
 
 ############################################################################################################
 import datasets
 from datasets import load_dataset, Dataset
 
-df_train_prueba = Dataset.from_pandas(df_train_prueba)
-df_test_prueba = Dataset.from_pandas(df_test_prueba)
+df_train = Dataset.from_pandas(df_train)
+df_test = Dataset.from_pandas(df_test)
 
 ############################################################################################################
 def extract_all_chars(batch):
@@ -87,11 +87,11 @@ def extract_all_chars(batch):
   vocab = list(set(all_text))
   return {"vocab": [vocab], "all_text": [all_text]}
 
-vocab_train = df_train_prueba.map(extract_all_chars, batched=True, batch_size=-1,
-                                    keep_in_memory=True, remove_columns=df_train_prueba.column_names)
+vocab_train = df_train.map(extract_all_chars, batched=True, batch_size=-1,
+                                    keep_in_memory=True, remove_columns=df_train.column_names)
 
-vocab_test = df_test_prueba.map(extract_all_chars, batched=True, batch_size=-1,
-                                    keep_in_memory=True, remove_columns=df_test_prueba.column_names)
+vocab_test = df_test.map(extract_all_chars, batched=True, batch_size=-1,
+                                    keep_in_memory=True, remove_columns=df_test.column_names)
 
 vocab_list = list(set(vocab_train["vocab"][0]) | set(vocab_test["vocab"][0]))
 vocab_dict = {v: k for k, v in enumerate(vocab_list)}
@@ -118,8 +118,8 @@ processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tok
 import torchaudio
 from datasets import Audio 
 
-df_train_prueba = df_train_prueba.cast_column("audio", Audio(sampling_rate=16_000))
-df_test_prueba = df_test_prueba.cast_column("audio", Audio(sampling_rate=16_000))
+df_train = df_train.cast_column("audio", Audio(sampling_rate=16_000))
+df_test = df_test.cast_column("audio", Audio(sampling_rate=16_000))
 
 from datasets import load_metric
 
@@ -137,10 +137,10 @@ def prepare_dataset(batch):
             batch["labels"] = processor(batch["file"]).input_ids
         return batch
 
-df_train_prueba = df_train_prueba.map(prepare_dataset, remove_columns=df_train_prueba.column_names)
-df_test_prueba = df_test_prueba.map(prepare_dataset, remove_columns=df_test_prueba.column_names)
-print(df_train_prueba)
-print(df_test_prueba)
+df_train = df_train.map(prepare_dataset, remove_columns=df_train.column_names)
+df_test = df_test.map(prepare_dataset, remove_columns=df_test.column_names)
+print(df_train)
+print(df_test)
 
 ###################################################
 # Training ########################################
@@ -262,13 +262,11 @@ trainer = Trainer(
     data_collator=data_collator,
     args=training_args,
     compute_metrics=compute_metrics,
-    train_dataset=df_train_prueba,
-    eval_dataset=df_test_prueba,
+    train_dataset=df_train,
+    eval_dataset=df_test,
     tokenizer=processor.feature_extractor,
 )
 
 #
 print("# START TRAINING")
 trainer.train()
-
-
